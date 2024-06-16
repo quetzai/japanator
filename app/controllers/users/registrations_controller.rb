@@ -40,7 +40,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
   #   super
   # end
 
-  # protected
+  protected
 
   # If you have extra params to permit, append them to the sanitizer.
   def configure_sign_up_params
@@ -61,4 +61,19 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # def after_inactive_sign_up_path_for(resource)
   #   super(resource)
   # end
+
+  private
+
+    def respond_with(resource, _opts = {})
+      if resource.persisted?
+        rend json: {
+          status: {code: 200, message: 'User signed up successfully'},
+          data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
+        }
+      else
+        render json: {
+          status: {message: "User could not be created. #{resource.errors.full_messages.to_sentence}"}
+        }, status: :unprocessable_content
+      end
+    end
 end
